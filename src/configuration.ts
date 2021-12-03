@@ -35,27 +35,24 @@ async function loadOrBuildConfig(configFilepath?: string): Promise<{cfg: cosmico
         } else if (!searchResult.config) {
             return buildConfig(searchResult.filepath);
         } else {
-            return {
-                cfg: searchResult.config,
-                cfgFilepath: searchResult.filepath,
-            };
+            return buildConfig(searchResult.filepath, searchResult.config);
         }
     } catch (e) {
         console.error('Error when searching for configuration', e);
     }
 }
 
-async function buildConfig(filepath: string = defaultConfigPath)
+async function buildConfig(filepath: string = defaultConfigPath, existingConfig: cosmiconfig.Config = null)
     : Promise<{cfg: cosmiconfig.Config, cfgFilepath: string }> {
 
     const onCancel = () => {
-        console.log('Failed to gather nessacary information, exiting...');
+        console.log('Failed to gather necessary information, exiting...');
         process.exit(0);
     };
 
     let ynabConfig = {} as IYNABConfiguration;
     try {
-        ynabConfig = await ynabBuildConfig();
+        ynabConfig = await ynabBuildConfig(existingConfig);
     } catch (e) {
         console.error('Failed to gather ynab configuration information', e);
         process.exit(0);
