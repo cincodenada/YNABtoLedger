@@ -14,6 +14,7 @@
     "meow": "^7.1.1",
     "moment": "^2.27.0",
     "prompts": "^2.3.2",
+    "source-map-support": "^0.5.21",
     "uuid": "^8.3.0",
     "ynab": "^1.20.0"
   },

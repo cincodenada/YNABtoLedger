@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+require('source-map-support').install()
 import meow = require('meow');
 import { ListAccountsSubCommand } from './commands/list-accounts';
 import { ToBeancountSubCommand } from './commands/to-beancount';
