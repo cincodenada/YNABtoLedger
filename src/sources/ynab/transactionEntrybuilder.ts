@@ -51,26 +51,26 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
 
     private buildTransferEntry(transaction: TransactionDetail): StandardEntry {
         const account = this.accountLookup(transaction.account_id);
-        const transferTransaction = this.transactionLookup(transaction.transfer_transaction_id);
         const transferAccount = this.accountLookup(transaction.transfer_account_id);
+        const amount = this.getTransactionAccountAmount(transaction, account);
         return new StandardEntry({
             ...this.buildDefaultEntry(transaction),
-            id: uuidv5([transaction.id, transferTransaction.id].sort().join(''), UUID_NAMESPACE),
+            id: uuidv5(transaction.id, UUID_NAMESPACE),
             metadata: {
                 ynab_id: transaction.id,
-                ynab_transfer_id: transferTransaction.id,
+                ynab_transfer_id: transaction.transfer_transaction_id,
             },
             payee: 'Transfer',
             splits: [
                 {
                     account: this.getAccountAccountName(account),
-                    amount: this.getTransactionAccountAmount(transaction, account),
+                    amount,
                     group: this.getAccountSplitGroup(account),
                     memo: null,
                 },
                 {
                     account: this.getAccountAccountName(transferAccount),
-                    amount: this.getTransactionAccountAmount(transferTransaction, transferAccount),
+                    amount: -amount,
                     group: this.getAccountSplitGroup(transferAccount),
                     memo: null,
                 },
@@ -117,6 +117,18 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
                     memo: null,
                 },
                 ...transaction.subtransactions.map((subTransaction: SubTransaction) => {
+        if (subTransaction.transfer_account_id !== null) {
+            // Transfer Case
+        const account = this.accountLookup(transaction.account_id);
+        const transferAccount = this.accountLookup(subTransaction.transfer_account_id);
+        const amount = utils.convertMilliUnitsToCurrencyAmount(subTransaction.amount);
+                return {
+                    account: this.getAccountAccountName(transferAccount),
+                    amount: -amount,
+                    group: this.getAccountSplitGroup(transferAccount),
+                    memo: null,
+                }
+        } else {
                     const category: Category = this.categoryLookup(subTransaction.category_id);
                     const categoryGroup: CategoryGroup = this.getCategoryGroup(category);
                     return {
@@ -129,6 +141,7 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
                         group: this.getCategorySplitGroup(transaction, category),
                         memo: subTransaction.memo,
                     };
+        }
                 }),
             ].sort(splitSort),
         });

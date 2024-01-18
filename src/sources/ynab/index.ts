@@ -120,7 +120,15 @@ function buildTransactionEntries(
         (id: string) => findbyId(categories, getId, id),
         (id: string) => findbyId(categoryGroups, getId, id)
     );
-    return transactions.map(t => transactionEntryBuilder.buildEntry(t));
+    return transactions.map(t => transactionEntryBuilder.buildEntry(t)).filter(t => {
+        // Drop duplicate transfers
+
+        if(t.metadata.ynab_transfer_id === undefined) { return true }
+        // The other side of this transfer is a subtransaction, so we want to drop this one
+        if(t.metadata.ynab_transfer_id === null) { return false }
+        // Otherwise, just pick one - this works as well as any
+        return t.metadata.ynab_id < t.metadata.ynab_transfer_id
+    })
 }
 
 function constructTransactionDetails(budgetDetail: BudgetDetailResponseData): TransactionDetail[] {
