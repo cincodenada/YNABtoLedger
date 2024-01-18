@@ -14,12 +14,24 @@ export interface IConfiguration {
     filters: {[name: string]: IFilter};
     start_date?: string;
     beancount_tags: boolean;
+    meta_accounts?: string[];
+    offbudget_mappings?: CategoryMapping[];
 }
 
 export interface IYNABConfiguration {
     api_access_token: string;
     primary_budget_id: string;
 }
+
+export type TransactionMapper = {
+    payee?: string|string[],
+    memo?: string|string[],
+}
+
+export type CategoryMapping = [
+    TransactionMapper,
+    string
+]
 
 export type IFilter = {
     [operator: string]: IFilterSubOperations | IFilterSubOperations[]

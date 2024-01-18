@@ -1,4 +1,5 @@
-import { IEntry, ISplit } from './types';
+import { TransactionDetail } from 'ynab';
+import { IEntry, ISplit, TransactionMapper } from './types';
 
 export const UUID_NAMESPACE: string = '52670371-647b-4ffc-a0fa-f9faefc4b121';
 
@@ -130,4 +131,20 @@ export function normalizeName<T>(object: T, keys: string[] = ['name']): T {
         }
     }
     return object;
+}
+
+export function matchesMapping(mapper: TransactionMapper, transaction: TransactionDetail) {
+    if(typeof mapper.payee === "string" && mapper.payee !== transaction.payee_name) {
+        return false
+    } else if(Array.isArray(mapper.payee) && !mapper.payee.includes(transaction.payee_name)) {
+        return false
+    }
+
+    if(typeof mapper.memo === "string" && mapper.memo !== transaction.memo) {
+        return false
+    } else if(Array.isArray(mapper.memo) && !mapper.memo.includes(transaction.memo)) {
+        return false
+    }
+
+    return true
 }

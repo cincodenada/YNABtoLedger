@@ -14,8 +14,8 @@ import {
 import { getConfig } from '../../configuration';
 import { AutomaticEntry } from '../../entries/AutomaticEntry';
 import { StandardEntry } from '../../entries/StandardEntry';
-import { IConfiguration, IEntry } from '../../types';
-import { entrySort, findAllById, findbyId, reduceToMap, uniqueElements } from '../../utils';
+import { IConfiguration, IEntry, CategoryMapping, SplitGroup } from '../../types';
+import { entrySort, findAllById, findbyId, reduceToMap, uniqueElements, matchesMapping } from '../../utils';
 import { initializeApi } from './api';
 import { YNABBudgetEntryBuilder } from './budgetEntryBuilder';
 import { YNABTransactionEntryBuilder } from './transactionEntrybuilder';
@@ -54,7 +54,8 @@ export async function getEntries(options: IYNABOptions = defaultOptions): Promis
         transactions,
         accounts,
         categories,
-        categoryGroups
+        categoryGroups,
+        config.offbudget_mappings,
     ));
 
     if (options.budget) {
@@ -112,13 +113,31 @@ function buildTransactionEntries(
     transactions: TransactionDetail[],
     accounts: Account[],
     categories: Category[],
-    categoryGroups: CategoryGroup[]): IEntry[] {
+    categoryGroups: CategoryGroup[],
+    offbudgetMappings: CategoryMapping[]
+): IEntry[] {
 
     const transactionEntryBuilder = new YNABTransactionEntryBuilder(
         (id: string) => findbyId(transactions, getId, id),
         (id: string) => findbyId(accounts, getId, id),
         (id: string) => findbyId(categories, getId, id),
-        (id: string) => findbyId(categoryGroups, getId, id)
+        (id: string) => findbyId(categoryGroups, getId, id),
+        (transaction: TransactionDetail) => {
+            const match = offbudgetMappings.find(m => matchesMapping(m[0], transaction));
+            if(match) {
+                const [group, category] = match[1].split(":");
+                switch(group) {
+                    case "Income":
+                        return [SplitGroup.Income, category];
+                    case "Equity":
+                        return [SplitGroup.Equity, category];
+                    case "Expenses":
+                    default:
+                        return [SplitGroup.Expenses, category];
+                }
+            }
+            return [SplitGroup.Expenses, 'Uncategorized']
+        }
     );
     return transactions.map(t => transactionEntryBuilder.buildEntry(t)).filter(t => {
         // Drop duplicate transfers
