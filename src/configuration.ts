@@ -62,6 +62,7 @@ async function buildConfig(filepath: string = defaultConfigPath, existingConfig:
         filters: {},
         account_name_map: [],
         beancount_tags: true,
+        ...existingConfig,
         ynab: ynabConfig,
     };
 

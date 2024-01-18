@@ -69,6 +69,7 @@ export default async function(existingConfig: cosmiconfig.Config): Promise<IYNAB
     }
 
     return {
+        ...ynabConfig,
         api_access_token: apiKey,
         primary_budget_id: primaryBudgetId,
     };
