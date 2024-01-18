@@ -152,6 +152,8 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
     }
 
     private getCategorySplitGroup(transaction: TransactionDetail, category: Category): SplitGroup {
+        if (!category) { return SplitGroup.Expenses; }
+
         switch (category.name) {
             case 'To be Budgeted':
                 if (transaction.payee_name === 'Starting Balance') {
@@ -169,13 +171,19 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
         category: Category,
         categoryGroup: CategoryGroup): string {
         const accountName = (() => {
-            switch (this.getCategorySplitGroup(transaction, category)) {
-                case SplitGroup.Income:
-                    return `${transaction.payee_name}`;
-                case SplitGroup.Equity:
-                    return 'Starting Balance';
-                case SplitGroup.Expenses:
-                    return `${categoryGroup.name}:${category.name}`;
+            if (category) {
+                switch (this.getCategorySplitGroup(transaction, category)) {
+                    case SplitGroup.Income:
+                        return `${transaction.payee_name}`;
+                    case SplitGroup.Equity:
+                        return 'Starting Balance';
+                    case SplitGroup.Expenses:
+                        return `${categoryGroup.name}:${category.name}`;
+                }
+            } else if (categoryGroup) {
+                return `${categoryGroup.name}:Uncategorized`;
+            } else {
+                return 'Uncategorized';
             }
         })();
 

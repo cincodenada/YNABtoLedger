@@ -25,6 +25,7 @@ export class YNABEntryBuilder {
     }
 
     protected getCategoryGroup(category: Category): CategoryGroup {
+        if(!category) { return null }
         if (category.hidden) {
             const originalGroup = this.categoryGroupLookup(category.original_category_group_id);
             if (originalGroup) {
