@@ -125,7 +125,8 @@ function buildTransactionEntries(
         (transaction: TransactionDetail) => {
             const match = offbudgetMappings.find(m => matchesMapping(m[0], transaction));
             if(match) {
-                const [group, category] = match[1].split(":");
+                const [group, ...categories] = match[1].split(":");
+                const category = categories.join(":");
                 switch(group) {
                     case "Income":
                         return [SplitGroup.Income, category];
