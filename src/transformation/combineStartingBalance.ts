@@ -1,6 +1,6 @@
 import { StandardEntry } from '../entries/StandardEntry';
 import { IEntry, IConfiguration, SplitGroup } from '../types';
-import { partition, splitSort } from '../utils';
+import { partition, splitName } from '../utils';
 
 export function combineStartingBalance(config: IConfiguration, entries: IEntry[]) {
     const [startingBalances, remainder] = partition(entries, t => (t as StandardEntry).payee === "Starting Balance")
@@ -9,8 +9,9 @@ export function combineStartingBalance(config: IConfiguration, entries: IEntry[]
         return combined
     })
     combined.splits = [
-        // TODO: Sort better now?
-        ...combined.splits.filter(s => s.group !== SplitGroup.Expenses).sort(splitSort),
+        ...combined.splits.filter(s => s.group !== SplitGroup.Expenses).sort(
+            (a, b) => splitName(a).localeCompare(splitName(b))
+        ),
         {
             group: SplitGroup.Equity,
             amount: null,

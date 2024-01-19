@@ -143,6 +143,10 @@ export function normalizeName<T>(object: T, keys: string[] = ['name']): T {
     return object;
 }
 
+export function splitName(split: ISplit): string {
+    return `${split.group}:${split.account}`
+}
+
 export function matchesMapping(mapper: TransactionMapper, transaction: TransactionDetail) {
     if(typeof mapper.payee === "string" && mapper.payee !== transaction.payee_name) {
         return false
