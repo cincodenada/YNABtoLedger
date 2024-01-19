@@ -2,15 +2,20 @@ import { IOutputRow, OutputRowType, OutputType } from '../outputs/types';
 import { EntryType, IEntry } from '../types';
 import { splitSort } from '../utils';
 
+function formatAmount(splitAmount, currency) {
+    if(splitAmount === null) { return "" }
+    const amount = Math.abs(splitAmount);
+    const sign = Math.sign(splitAmount);
+    const currencySymbol = currencyToSymbol(currency);
+    return `${sign > 0 ? ' ' : '-'}${currencySymbol}${amount.toFixed(2)}`;
+}
+
 export function buildLedgerEntryRows({type, splits, currency}: IEntry, outputType: OutputType): IOutputRow[] {
     splits = splits.sort(splitSort);
     switch (outputType) {
         case OutputType.Ledger:
             return splits.map(split => {
-                const amount = Math.abs(split.amount);
-                const sign = Math.sign(split.amount);
-                const currencySymbol = currencyToSymbol(currency);
-                const amountString = `${sign > 0 ? ' ' : '-'}${currencySymbol}${amount.toFixed(2)}`;
+                const amountString = formatAmount(split.amount, currency)
                 switch (type) {
                     case EntryType.Transaction:
                             return {
