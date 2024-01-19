@@ -68,3 +68,34 @@ export function cleanupMeta(config: IConfiguration, entries: IEntry[]): IEntry[]
 export function cleanupTransfers(config: IConfiguration, entries: IEntry[]): IEntry[] {
     return entries.filter(isValidTransfer);
 }
+
+export function rtaToIncome(config: IConfiguration, entries: IEntry[]): IEntry[] {
+    return entries.map(e => {
+        const rta = getRtaSplit(e);
+        const tx = (e as StandardEntry);
+        if(rta) {
+            if(tx.payee === "Starting Balance") {
+                rta.group = SplitGroup.Equity
+                rta.account = 'Starting Balance'
+            } else if(tx.payee.includes("Dividend")) {
+                rta.group = SplitGroup.Income
+                rta.account = 'Dividend'
+            } else if(tx.payee.includes("Interest")) {
+                rta.group = SplitGroup.Income
+                rta.account = 'Interest'
+            } else if(tx.payee.includes("Payroll")) {
+                rta.group = SplitGroup.Income
+                if(tx.splits.find(s => s.account.includes('Benefits'))) {
+                    rta.account = 'Benefits'
+                } else {
+                    rta.account = 'Salary'
+                }
+            } else {
+                rta.group = SplitGroup.Income
+                rta.account = 'Other'
+            }
+        }
+        return e
+    })
+
+}
