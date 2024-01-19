@@ -50,23 +50,13 @@ export async function getEntries(options: IYNABOptions = defaultOptions): Promis
 
     const entrySets: IEntry[][] = [];
 
-    const transactionEntries = buildTransactionEntries(
+    entrySets.push(buildTransactionEntries(
         transactions,
         accounts,
         categories,
         categoryGroups,
         config.mappings,
-    ).filter(t => {
-        // Drop duplicate transfers
-
-        if(t.metadata.ynab_transfer_id === undefined) { return true }
-        // The other side of this transfer is a subtransaction, so we want to drop this one
-        if(t.metadata.ynab_transfer_id === null) { return false }
-        // Otherwise, just pick one - this works as well as any
-        return t.metadata.ynab_id < t.metadata.ynab_transfer_id
-    })
-
-    entrySets.push(transactionEntries);
+    ));
 
     if (options.budget) {
         entrySets.push(buildBudgetEntries(
