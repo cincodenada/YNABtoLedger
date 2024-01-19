@@ -108,6 +108,16 @@ export function identity<T>(arg: T): T {
     return arg;
 }
 
+export function partition<T>(list: T[], test: (item: T) => boolean): [T[], T[]] {
+    return list.reduce(
+        (parts, elm) => {
+            parts[test(elm) ? 0 : 1].push(elm)
+            return parts
+        },
+        [[], []]
+    );
+}
+
 // ---------------------- Normalization and validation functions ----------------------
 
 // Replace chains of spaces with one space, and remove illegal characters
