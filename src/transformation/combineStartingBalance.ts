@@ -36,36 +36,28 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
       e.splits.find((s) => s.account.includes("Payroll"))?.account ||
       "__remainder__",
   );
-  const grouped = Object.values(payrolls)
-    .map((entries) =>
-      Object.values(groupBy(entries, (e) => e.recordDate)).map((dateEntries) =>
-        dateEntries.reduce((combined, entry) => {
-          combined.splits = combined.splits.concat(entry.splits);
-          return combined;
-        }),
+  const grouped = Object.entries(payrolls)
+    .map(([payroll, entries]) =>
+      Object.values(groupBy(entries, (e) => e.recordDate)).map(
+        (dateEntries) => {
+          const firstEntry = dateEntries[0] as StandardEntry;
+          return dateEntries.reduce(
+            (combined, entry) => {
+              combined.splits = combined.splits.concat(
+                entry.splits.map((s) => ({ ...s, memo: s.memo || entry.memo })),
+              );
+              return combined;
+            },
+            new StandardEntry({
+              ...firstEntry,
+              memo: "Combined payroll",
+              payee: payroll.split(":").slice(-1)[0],
+            }),
+          );
+        },
       ),
     )
-    .flat()
-    .map((e) => {
-      const splits = groupBy(e.splits, s => splitName(s));
-      e.splits = Object.entries(splits)
-        .map(([account, splits]) => {
-          if (account.includes("Payroll")) {
-            return [];
-          }
-          if (account.startsWith("Income:")) {
-            return [
-              splits.reduce((acc, entry) => ({
-                ...acc,
-                amount: acc.amount + entry.amount,
-              })),
-            ];
-          }
-          return splits;
-        })
-        .flat();
-      return e;
-    });
+    .flat();
 
   return [...grouped, ...remainder];
 }
