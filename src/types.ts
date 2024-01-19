@@ -15,7 +15,7 @@ export interface IConfiguration {
     start_date?: string;
     beancount_tags: boolean;
     meta_accounts?: string[];
-    offbudget_mappings?: CategoryMapping[];
+    mappings?: CategoryMapping[];
 }
 
 export interface IYNABConfiguration {

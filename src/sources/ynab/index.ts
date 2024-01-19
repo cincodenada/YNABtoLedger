@@ -55,7 +55,7 @@ export async function getEntries(options: IYNABOptions = defaultOptions): Promis
         accounts,
         categories,
         categoryGroups,
-        config.offbudget_mappings,
+        config.mappings,
     ).filter(t => {
         // Drop duplicate transfers
 
