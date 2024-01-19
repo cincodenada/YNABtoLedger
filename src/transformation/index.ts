@@ -11,6 +11,8 @@ export async function transform(entries: IEntry[]) {
     entries = mapAccounts(config, entries);
     entries = filterEntries(config, entries);
     entries = cleanupTransfers(config, entries);
+    //entries = cleanupRta(config, entries);
+    //entries = cleanupMeta(config, entries);
     entries = combineStartingBalance(config, entries);
 
     return entries;

@@ -1,4 +1,6 @@
+import { StandardEntry } from '../entries/StandardEntry';
 import { IEntry, IConfiguration, SplitGroup } from '../types';
+import { partition, splitName } from "../utils"
 
 function isValidTransfer(entry: IEntry) {
     if(entry.metadata.ynab_transfer_id === undefined) { return true }
@@ -6,6 +8,61 @@ function isValidTransfer(entry: IEntry) {
     if(entry.metadata.ynab_transfer_id === null) { return false }
     // Otherwise, just pick one - this works as well as any
     return entry.metadata.ynab_id < entry.metadata.ynab_transfer_id
+}
+
+function getRtaSplit(entry: IEntry) {
+    return entry.splits.find(s => s.account.startsWith('Internal Master Category'))
+}
+
+function isMetaTransfer(metaAccounts: string[]) {
+    return (entry: IEntry)  => entry.splits.length === 2 && entry.splits.every(s => metaAccounts.includes(s.account.split(':').slice(-1)[0]))
+}
+
+export function cleanupRta(entries: IEntry[]) {
+    return entries.filter(e => (e as StandardEntry).payee?.startsWith("Transfer") ? !getRtaSplit(e) : true)
+        .map(e => {
+            const rtaSplit = getRtaSplit(e);
+            if(rtaSplit) {
+                rtaSplit.group = SplitGroup.Income;
+                rtaSplit.account = "Other";
+            }
+            return e 
+        })
+}
+
+export function cleanupMeta(config: IConfiguration, entries: IEntry[]): IEntry[] {
+    const [meta, remainder] = partition(entries, isMetaTransfer(config.meta_accounts))
+    const transferMap = {}
+    for(const t of meta) {
+        if(!transferMap[t.recordDate]) { transferMap[t.recordDate] = {} }
+        const curDate = transferMap[t.recordDate];
+        for(const idxKey in t.splits) {
+            const idx = Number(idxKey)
+            const key = splitName(t.splits[idx]);
+            const other = t.splits[1-idx]
+            if(!curDate[key]) { curDate[key] = [] }
+            curDate[key].push(other)
+        }
+    }
+
+    return remainder.map(e => {
+        if(e.splits.length !== 2) { return e }
+
+        // TODO: Gosh this is ugly
+        const transfers = transferMap[e.recordDate];
+        if(transfers) {
+            const expenseIdx = e.splits.findIndex(s => s.group === 'Expenses')
+            if(expenseIdx > -1) {
+                const other = e.splits[1-expenseIdx]
+                const relTransfer = transfers[splitName(other)]?.find(t => t.amount === other.amount)
+                if(relTransfer) {
+                    e.splits[1-expenseIdx] = relTransfer;
+                }
+            }
+        }
+
+        return e
+    })
 }
 
 export function cleanupTransfers(config: IConfiguration, entries: IEntry[]): IEntry[] {
