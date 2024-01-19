@@ -82,7 +82,7 @@ export function rtaToIncome(config: IConfiguration, entries: IEntry[]): IEntry[]
         if(rta) {
             if(tx.payee === "Starting Balance") {
                 rta.group = SplitGroup.Equity
-                rta.account = 'Starting Balance'
+                rta.account = 'Starting Balances'
             } else if(tx.payee.includes("Dividend")) {
                 rta.group = SplitGroup.Income
                 rta.account = 'Dividend'
