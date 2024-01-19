@@ -46,10 +46,26 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
       ),
     )
     .flat()
-    .map(e => {
-        e.splits = e.splits.filter(s => !s.account.includes("Payroll"))
-        return e
-    })
+    .map((e) => {
+      const splits = groupBy(e.splits, s => splitName(s));
+      e.splits = Object.entries(splits)
+        .map(([account, splits]) => {
+          if (account.includes("Payroll")) {
+            return [];
+          }
+          if (account.startsWith("Income:")) {
+            return [
+              splits.reduce((acc, entry) => ({
+                ...acc,
+                amount: acc.amount + entry.amount,
+              })),
+            ];
+          }
+          return splits;
+        })
+        .flat();
+      return e;
+    });
 
   return [...grouped, ...remainder];
 }
