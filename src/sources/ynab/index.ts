@@ -15,7 +15,7 @@ import { getConfig } from '../../configuration';
 import { AutomaticEntry } from '../../entries/AutomaticEntry';
 import { StandardEntry } from '../../entries/StandardEntry';
 import { IConfiguration, IEntry, CategoryMapping, SplitGroup } from '../../types';
-import { entrySort, findAllById, findbyId, reduceToMap, uniqueElements, matchesMapping, partition, splitSort } from '../../utils';
+import { entrySort, findAllById, findbyId, reduceToMap, uniqueElements, matchesMapping } from '../../utils';
 import { initializeApi } from './api';
 import { YNABBudgetEntryBuilder } from './budgetEntryBuilder';
 import { YNABTransactionEntryBuilder } from './transactionEntrybuilder';
@@ -150,27 +150,7 @@ function buildTransactionEntries(
             return [SplitGroup.Expenses, 'Uncategorized']
         }
     );
-    const transactionEntries = transactions.map(t => transactionEntryBuilder.buildEntry(t));
-
-    const [startingBalances, remainder] = partition(transactionEntries, t => t.payee === "Starting Balance")
-    const combined = startingBalances.reduce((combined, t) => {
-        combined.splits.push(t.splits.find(s => s.group !== SplitGroup.Expenses))
-        return combined
-    })
-    combined.splits = [
-        ...combined.splits.filter(s => s.group !== SplitGroup.Expenses).sort(splitSort),
-        {
-            group: SplitGroup.Equity,
-            amount: null,
-            account: 'Starting Balances',
-            memo: null
-        }
-    ]
-
-    return [
-        combined,
-        ...remainder
-    ]
+    return transactions.map(t => transactionEntryBuilder.buildEntry(t));
 }
 
 function constructTransactionDetails(budgetDetail: BudgetDetailResponseData): TransactionDetail[] {
