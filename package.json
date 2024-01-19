@@ -8,6 +8,7 @@
     "@types/meow": "^5.0.0",
     "@types/node": "^12.12.54",
     "@types/prompts": "^2.0.8",
+    "@types/uuid": "^9.0.7",
     "cosmiconfig": "^5.2.1",
     "dotenv": "^8.2.0",
     "json-logic-js": "^2.0.0",

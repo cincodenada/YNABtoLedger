@@ -35,7 +35,7 @@ export function buildLedgerEntryRows({type, splits, currency}: IEntry, outputTyp
                                 type: OutputRowType.Split,
                                 values: [
                                     `[${split.group}:${split.account}]`,
-                                    amountString,
+                                    split.amount.toFixed(2),
                                     ...(split.memo
                                         ? [
                                             `; ${split.memo}`,

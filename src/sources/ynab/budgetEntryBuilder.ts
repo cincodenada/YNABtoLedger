@@ -1,5 +1,5 @@
 import moment = require('moment');
-import { uuidv5 } from 'uuid';
+import { v5 as uuidv5 } from 'uuid';
 import { Account, Category, CategoryGroup, MonthDetail, TransactionDetail } from 'ynab';
 import { AutomaticEntry } from '../../entries/AutomaticEntry';
 import { StandardEntry } from '../../entries/StandardEntry';
