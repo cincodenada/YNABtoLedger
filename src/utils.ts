@@ -108,6 +108,19 @@ export function identity<T>(arg: T): T {
     return arg;
 }
 
+export function groupBy<T>(list: T[], keyFunc: (item: T) => string): Record<string, T[]> {
+    return list.reduce(
+        (parts, elm) => {
+            const key = keyFunc(elm);
+            return {
+                ...parts,
+                [key]: [...(parts[key] || []), elm]
+            }
+        },
+        {}
+    );
+}
+
 export function partition<T>(list: T[], test: (item: T) => boolean): [T[], T[]] {
     return list.reduce(
         (parts, elm) => {

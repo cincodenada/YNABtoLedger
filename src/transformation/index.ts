@@ -2,7 +2,7 @@ import { getConfig } from '../configuration';
 import { IConfiguration, IEntry } from '../types';
 import { mapAccounts } from './accountMapping';
 import { filterEntries } from './filtering';
-import { combineStartingBalance } from './combineStartingBalance';
+import { combineStartingBalance, combinePayroll } from './combineStartingBalance';
 import { cleanupTransfers, rtaToIncome } from './cleanupTransfers';
 
 export async function transform(entries: IEntry[]) {
@@ -14,7 +14,8 @@ export async function transform(entries: IEntry[]) {
     entries = rtaToIncome(config, entries);
     //entries = cleanupRta(config, entries);
     //entries = cleanupMeta(config, entries);
-    //entries = combineStartingBalance(config, entries);
+    entries = combineStartingBalance(config, entries);
+    entries = combinePayroll(config, entries);
 
     return entries;
 }
