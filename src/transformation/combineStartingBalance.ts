@@ -45,7 +45,11 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
         }),
       ),
     )
-    .flat();
+    .flat()
+    .map(e => {
+        e.splits = e.splits.filter(s => !s.account.includes("Payroll"))
+        return e
+    })
 
   return [...grouped, ...remainder];
 }
