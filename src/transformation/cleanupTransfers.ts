@@ -66,7 +66,13 @@ export function cleanupMeta(config: IConfiguration, entries: IEntry[]): IEntry[]
 }
 
 export function cleanupTransfers(config: IConfiguration, entries: IEntry[]): IEntry[] {
-    return entries.filter(isValidTransfer);
+    const prune = new Set()
+    for(const tx of entries.filter(e => e.metadata.ynab_transfer_id)) {
+        if(!prune.has(tx.metadata.ynab_id)) {
+            prune.add(tx.metadata.ynab_transfer_id)
+        }
+    }
+    return entries.filter(e => !(prune.has(e.metadata.ynab_id) || e.metadata.ynab_transfer_id === null));
 }
 
 export function rtaToIncome(config: IConfiguration, entries: IEntry[]): IEntry[] {
