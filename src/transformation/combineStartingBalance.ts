@@ -30,11 +30,12 @@ export function combineStartingBalance(
 }
 
 export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
+  const { match = "Payroll", oneside = true } = config.combine_payroll || {};
   const { __remainder__: remainder, ...payrolls } = groupBy(
     entries,
     (e) =>
       ((e as StandardEntry).payee !== "Starting Balance" &&
-        e.splits.find((s) => s.account.includes("Payroll"))?.account) ||
+        e.splits.find((s) => s.account.includes(match))?.account) ||
       "__remainder__",
   );
   let grouped = Object.entries(payrolls)
@@ -61,12 +62,12 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
     )
     .flat();
 
-  if (true) {
+  if (oneside) {
     grouped = grouped.map((e) => {
       const splits = groupBy(e.splits, (s) => splitName(s));
       e.splits = Object.entries(splits)
         .map(([account, splits]) => {
-          if (account.includes("Payroll")) {
+          if (account.includes(match)) {
             return [];
           }
           if (account.startsWith("Income:")) {

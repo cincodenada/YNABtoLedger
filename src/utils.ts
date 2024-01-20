@@ -1,4 +1,4 @@
-import { TransactionDetail } from 'ynab';
+import { StandardEntry } from "./entries/StandardEntry";
 import { IEntry, ISplit, TransactionMapper } from './types';
 
 export const UUID_NAMESPACE: string = '52670371-647b-4ffc-a0fa-f9faefc4b121';
@@ -160,16 +160,16 @@ export function splitName(split: ISplit): string {
     return `${split.group}:${split.account}`
 }
 
-export function matchesMapping(mapper: TransactionMapper, transaction: TransactionDetail) {
-    if(typeof mapper.payee === "string" && mapper.payee !== transaction.payee_name) {
+export function matchesMapping(mapper: TransactionMapper, entry: Partial<StandardEntry>) {
+    if(typeof mapper.payee === "string" && mapper.payee !== entry.payee) {
         return false
-    } else if(Array.isArray(mapper.payee) && !mapper.payee.includes(transaction.payee_name)) {
+    } else if(Array.isArray(mapper.payee) && !mapper.payee.includes(entry.payee)) {
         return false
     }
 
-    if(typeof mapper.memo === "string" && mapper.memo !== transaction.memo) {
+    if(typeof mapper.memo === "string" && mapper.memo !== entry.memo) {
         return false
-    } else if(Array.isArray(mapper.memo) && !mapper.memo.includes(transaction.memo)) {
+    } else if(Array.isArray(mapper.memo) && !mapper.memo.includes(entry.memo)) {
         return false
     }
 

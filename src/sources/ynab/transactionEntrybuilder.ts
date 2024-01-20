@@ -6,14 +6,11 @@ import { splitSort, UUID_NAMESPACE } from '../../utils';
 import { YNABEntryBuilder } from './entryBuilder';
 
 export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
-    protected offBudgetLookup: (transaction: TransactionDetail) => [SplitGroup, string]
-
     constructor(
         transactionsLookup: ((id: string) => TransactionDetail),
         accountLookup: ((id: string) => Account),
         categoryLookup: ((id: string) => Category),
         categoryGroupLookup: ((id: string) => CategoryGroup),
-        offBudgetLookup: ((transaction: TransactionDetail) => [SplitGroup, string])
     ) {
         super(
             transactionsLookup,
@@ -22,7 +19,6 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
             categoryGroupLookup,
             'YNABTransactionEntryBuilder'
         );
-        this.offBudgetLookup = offBudgetLookup;
     }
 
     public buildEntry(transaction: TransactionDetail): StandardEntry {
@@ -218,7 +214,7 @@ export class YNABTransactionEntryBuilder extends YNABEntryBuilder {
             } else if (categoryGroup) {
                 return [SplitGroup.Expenses, `${categoryGroup.name}:Uncategorized`];
             } else {
-                return this.offBudgetLookup(transaction);
+                return [SplitGroup.Expenses, "Uncategorized"]
             }
         })();
 

@@ -15,6 +15,10 @@ export interface IConfiguration {
     start_date?: string;
     beancount_tags: boolean;
     meta_accounts?: string[];
+    combine_payroll?: {
+        match?: string,
+        oneside?: boolean,
+    };
     mappings?: CategoryMapping[];
 }
 

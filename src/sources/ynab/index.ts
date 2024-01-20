@@ -55,7 +55,6 @@ export async function getEntries(options: IYNABOptions = defaultOptions): Promis
         accounts,
         categories,
         categoryGroups,
-        config.mappings,
     ));
 
     if (options.budget) {
@@ -114,31 +113,13 @@ function buildTransactionEntries(
     accounts: Account[],
     categories: Category[],
     categoryGroups: CategoryGroup[],
-    offbudgetMappings: CategoryMapping[]
 ): IEntry[] {
 
     const transactionEntryBuilder = new YNABTransactionEntryBuilder(
         (id: string) => findbyId(transactions, getId, id),
         (id: string) => findbyId(accounts, getId, id),
         (id: string) => findbyId(categories, getId, id),
-        (id: string) => findbyId(categoryGroups, getId, id),
-        (transaction: TransactionDetail) => {
-            const match = offbudgetMappings.find(m => matchesMapping(m[0], transaction));
-            if(match) {
-                const [group, ...categories] = match[1].split(":");
-                const category = categories.join(":");
-                switch(group) {
-                    case "Income":
-                        return [SplitGroup.Income, category];
-                    case "Equity":
-                        return [SplitGroup.Equity, category];
-                    case "Expenses":
-                    default:
-                        return [SplitGroup.Expenses, category];
-                }
-            }
-            return [SplitGroup.Expenses, 'Uncategorized']
-        }
+        (id: string) => findbyId(categoryGroups, getId, id)
     );
     return transactions.map(t => transactionEntryBuilder.buildEntry(t));
 }
