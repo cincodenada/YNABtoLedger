@@ -18,6 +18,7 @@ export interface IConfiguration {
     combine_payroll?: {
         match?: string,
         oneside?: boolean,
+        group_benefits?: boolean
     };
     mappings?: CategoryMapping[];
 }

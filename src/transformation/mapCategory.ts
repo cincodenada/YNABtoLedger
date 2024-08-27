@@ -20,7 +20,7 @@ function mapUncategorized(mappings: CategoryMapping[], entry: StandardEntry) {
       if (match) {
         const [group, ...categories] = match[1].split(":");
         split.group = group as SplitGroup;
-        split.account = categories.join(":");
+        split.account = categories.join(":").replace(/\{payee\}/g, entry.payee);
       }
     }
   }

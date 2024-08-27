@@ -30,12 +30,17 @@ export function combineStartingBalance(
 }
 
 export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
-  const { match = "Payroll", oneside = true } = config.combine_payroll || {};
+  const opts = {
+    match: "Payroll",
+    oneside: true,
+    group_benefits: true,
+    ...(config.combine_payroll || {}),
+  };
   const { __remainder__: remainder, ...payrolls } = groupBy(
     entries,
     (e) =>
       ((e as StandardEntry).payee !== "Starting Balance" &&
-        e.splits.find((s) => s.account.includes(match))?.account) ||
+        e.splits.find((s) => s.account.includes(opts.match))?.account) ||
       "__remainder__",
   );
   let grouped = Object.entries(payrolls)
@@ -43,6 +48,12 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
       Object.values(groupBy(entries, (e) => e.recordDate)).map(
         (dateEntries) => {
           const firstEntry = dateEntries[0] as StandardEntry;
+
+          // Leave simple transfers alone
+          if (dateEntries.length === 1) {
+            return dateEntries[0];
+          }
+
           return dateEntries.reduce(
             (combined, entry) => {
               combined.splits = combined.splits.concat(
@@ -62,15 +73,19 @@ export function combinePayroll(config: IConfiguration, entries: IEntry[]) {
     )
     .flat();
 
-  if (oneside) {
+  if (opts.oneside) {
     grouped = grouped.map((e) => {
+      if (e.splits.length === 2) {
+        return e;
+      }
+
       const splits = groupBy(e.splits, (s) => splitName(s));
       e.splits = Object.entries(splits)
         .map(([account, splits]) => {
-          if (account.includes(match)) {
+          if (account.includes(opts.match)) {
             return [];
           }
-          if (account.startsWith("Income:")) {
+          if (opts.group_benefits && account.startsWith("Income:")) {
             return [
               splits.reduce((acc, entry) => ({
                 ...acc,

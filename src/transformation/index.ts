@@ -9,8 +9,8 @@ import { cleanupTransfers, rtaToIncome } from './cleanupTransfers';
 export async function transform(entries: IEntry[]) {
     const config: IConfiguration = await getConfig();
 
-    entries = mapAccounts(config, entries);
     entries = mapCategory(config, entries);
+    entries = mapAccounts(config, entries);
     entries = filterEntries(config, entries);
     entries = cleanupTransfers(config, entries);
     entries = rtaToIncome(config, entries);
