@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=~/Documents/ledger
+DIR=~/Sync/budget/ledger
 FILE=ynab.ledger
 FILE_BEANCOUNT=ynab.beancount
 

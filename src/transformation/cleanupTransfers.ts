@@ -1,6 +1,7 @@
 import { StandardEntry } from '../entries/StandardEntry';
 import { IEntry, IConfiguration, SplitGroup } from '../types';
-import { partition, splitName } from "../utils"
+import { partition, splitName } from "../utils";
+import { P, match } from "ts-pattern";
 
 function isValidTransfer(entry: IEntry) {
     if(entry.metadata.ynab_transfer_id === undefined) { return true }
@@ -80,28 +81,20 @@ export function rtaToIncome(config: IConfiguration, entries: IEntry[]): IEntry[]
         const rta = getRtaSplit(e);
         const tx = (e as StandardEntry);
         if(rta) {
-            if(tx.payee === "Starting Balance") {
-                rta.group = SplitGroup.Equity
-                rta.account = 'Starting Balances'
-            } else if(tx.payee.includes("Dividend")) {
-                rta.group = SplitGroup.Income
-                rta.account = 'Dividend'
-            } else if(tx.payee.includes("Interest")) {
-                rta.group = SplitGroup.Income
-                rta.account = 'Interest'
-            } else if(tx.payee.includes("Payroll")) {
-                rta.group = SplitGroup.Income
-                if(tx.splits.find(s => s.account.includes('Benefits'))) {
-                    rta.account = 'Benefits'
-                } else {
-                    rta.account = 'Salary'
-                }
-            } else {
-                rta.group = SplitGroup.Income
-                rta.account = 'Other'
-            }
+            const [group, account] = match(tx)
+                .returnType<[SplitGroup, String]>()
+                .with({payee: "Starting Balance"}, () => [SplitGroup.Equity, 'Starting Balances'])
+                .with({payee: P.string.includes("Dividend")}, () => [SplitGroup.Income, 'Dividend'])
+                .with({payee: P.string.includes("Interest")}, () => [SplitGroup.Income, 'Interest'])
+                .with({payee: P.string.includes("Payroll")}, (tx: StandardEntry) => {
+                    if(tx.splits.find(s => s.account.includes('Benefits'))) {
+                       return [SplitGroup.Income, 'Benefits']
+                    } else {
+                        return [SplitGroup.Income, 'Salary']
+                    }
+                })
+                .otherwise(() => [SplitGroup.Income, 'Other'])
         }
         return e
     })
-
 }
