@@ -140,7 +140,7 @@ export const normalizeAccountName = (account: string): string =>
 export const validateAccountName = (account: string): boolean =>
     /^((?!\s{2}|[()[\]#;%*|]).)*$/gi.test(account); // No double space or one of: ()[]#;%*|
 
-export function normalizeName<T>(object: T, keys: string[] = ['name']): T {
+export function normalizeName<T extends object>(object: T, keys: string[] = ['name']): T {
     for (const key of keys) {
         if (key in object && object[key]) {
             const words: string[] = object[key].split(' ');
