@@ -81,8 +81,8 @@ export function rtaToIncome(config: IConfiguration, entries: IEntry[]): IEntry[]
         const rta = getRtaSplit(e);
         const tx = (e as StandardEntry);
         if(rta) {
-            const [group, account] = match(tx)
-                .returnType<[SplitGroup, String]>()
+            [rta.group, rta.account] = match(tx)
+                .returnType<[SplitGroup, string]>()
                 .with({payee: "Starting Balance"}, () => [SplitGroup.Equity, 'Starting Balances'])
                 .with({payee: P.string.includes("Dividend")}, () => [SplitGroup.Income, 'Dividend'])
                 .with({payee: P.string.includes("Interest")}, () => [SplitGroup.Income, 'Interest'])
